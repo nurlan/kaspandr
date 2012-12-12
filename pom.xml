@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>kaspandr</artifactId>
+
+	<repositories>
+		<!-- TODO remove this once maven central replicates the jboss repository -->
+		<!-- Included so the examples sources in the distribution zip build out-of-the-box 
+			with maven -->
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Repository Group</name>
+			<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<groupId>kz.nurlan.kaspandr</groupId>
+	<version>1.7.CR2</version>
+
+	<dependencies>
+		<dependency>
+		  <groupId>com.fasterxml.jackson.core</groupId>
+		  <artifactId>jackson-databind</artifactId>
+		  <version>2.1.1</version>
+		</dependency>
+		<dependency>
+	  <groupId>com.fasterxml.jackson.core</groupId>
+	  <artifactId>jackson-annotations</artifactId>
+	  <version>2.1.1</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.fasterxml.jackson.core</groupId>
+	  <artifactId>jackson-core</artifactId>
+	  <version>2.1.1</version>
+	</dependency>
+	<!-- apache pivot -->
+	<dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-core</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-charts</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-web</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-web-server</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-wtk</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pivot</groupId>
+      <artifactId>pivot-wtk-terra</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+	</dependencies>
+</project>
