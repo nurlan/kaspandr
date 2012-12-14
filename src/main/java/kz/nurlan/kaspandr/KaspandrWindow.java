@@ -5,12 +5,15 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.apache.pivot.beans.BXML;
 import org.apache.pivot.beans.Bindable;
 import org.apache.pivot.collections.Map;
 import org.apache.pivot.util.Resources;
+import org.apache.pivot.wtk.ActivityIndicator;
 import org.apache.pivot.wtk.Alert;
+import org.apache.pivot.wtk.BoxPane;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
 import org.apache.pivot.wtk.Label;
@@ -29,21 +32,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class KaspandrWindow extends Window implements Bindable {
     
+	@BXML private ActivityIndicator activityIndicator = null;
+	@BXML private BoxPane activityIndicatorBoxPane = null;
 	@BXML private PushButton jsonMergeButton = null;
 	@BXML private PushButton checkGroupButton1 = null;
 	@BXML private PushButton checkGroupButton2 = null;
 	@BXML private PushButton checkGroupButton3 = null;
-    @BXML private TextInput firstJson = null;
-    @BXML private TextInput secondJson = null;
-    @BXML private Label finalLessonSequence = null;
-    @BXML private Label checkGroupText1 = null;
-    @BXML private Label checkGroupText2 = null;
-    @BXML private Label checkGroupText3 = null;
-    @BXML private TextArea finalJsonText = null;
-
+	@BXML private TextInput firstJson = null;
+	@BXML private TextInput secondJson = null;
+	@BXML private Label finalLessonSequence = null;
+	@BXML private Label checkGroupText1 = null;
+	@BXML private Label checkGroupText2 = null;
+	@BXML private Label checkGroupText3 = null;
+	@BXML private TextArea finalJsonText = null;
+	
     private ObjectMapper mapper;
     
-    public HashMap<String, ArrayNode> groupByLessonsByGroup(String lessons) {
+    private HashMap<String, ArrayNode> groupByLessonsByGroup(String lessons) {
     	HashMap<String, ArrayNode> groupMap = new HashMap<String, ArrayNode>();
     	try {
         	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+lessons+"]}", ObjectNode.class);
@@ -71,7 +76,7 @@ public class KaspandrWindow extends Window implements Bindable {
     	return groupMap;
     }
     
-    public HashMap<String, Integer> getCountedLessonsByGroup(String lessons) {
+    private HashMap<String, Integer> getCountedLessonsByGroup(String lessons) {
     	HashMap<String, Integer> groupMap = new HashMap<String, Integer>();
     	try {
         	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+lessons+"]}", ObjectNode.class);
@@ -99,20 +104,53 @@ public class KaspandrWindow extends Window implements Bindable {
     	return groupMap;
     }
     
+    private String checkLessonCountByGroup(String lessons) throws JsonParseException, JsonMappingException, IOException {
+    	String resultString = "";
+    	
+		ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+lessons+"]}", ObjectNode.class);
+		JsonNode lessonsNode1 = rootNode1.get("lessons");
+		
+		TreeMap<String, Integer> groupMap = new TreeMap<String, Integer>();
+		
+		if(lessonsNode1 != null && lessonsNode1.isArray()) {
+			Iterator<JsonNode> it = lessonsNode1.elements();
+			
+			while(it.hasNext()) {
+				JsonNode lesson = it.next();
+				
+				if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
+					if(groupMap.containsKey(lesson.get("groupName").textValue()))
+						groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
+					else
+						groupMap.put(lesson.get("groupName").textValue(), 1);
+				}
+			}
+		}
+		
+		int count = 0;
+		for(String group : groupMap.keySet()) {
+			count += groupMap.get(group);
+		}
+		
+		for(String group : groupMap.keySet()) {
+			if(!resultString.isEmpty())
+				resultString += ", ";
+			
+			resultString += group+"("+groupMap.get(group)+")";
+		}
+		resultString = "Lessons("+count+"); " + resultString;
+    	
+    	return resultString;
+    }
+    
     @Override
     public void initialize(Map<String, Object> namespace, URL location, Resources resources) {
     	mapper = new ObjectMapper();
         jsonMergeButton.getButtonPressListeners().add(new ButtonPressListener() {
             @Override
             public void buttonPressed(Button button) {
-            	
+            	activityIndicatorBoxPane.setVisible(true);
 				try {
-//					ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+firstJson.getText().replaceAll("'", "\"")+"]}", ObjectNode.class);
-//					JsonNode lessonsNode1 = rootNode1.get("lessons");
-
-//					ObjectNode rootNode2 = mapper.readValue("{\"lessons\":["+secondJson.getText().replaceAll("'", "\"")+"]}", ObjectNode.class);
-//					JsonNode lessonsNode2 = rootNode2.get("lessons");
-					
 					String finalJson = "";
 					
 					int firstID = 0;
@@ -165,7 +203,6 @@ public class KaspandrWindow extends Window implements Bindable {
 	    			
 	    			finalLessonSequence.setText(""+(firstID));
 	    			finalJsonText.setText(finalJson);
-	    			
 				} catch (JsonParseException e) {
 					Alert.alert(MessageType.ERROR, "JsonParseException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
 					e.printStackTrace();
@@ -176,6 +213,7 @@ public class KaspandrWindow extends Window implements Bindable {
 					Alert.alert(MessageType.ERROR, "IOException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
 					e.printStackTrace();
 				}
+				activityIndicatorBoxPane.setVisible(false);
             }
         });
         
@@ -183,42 +221,7 @@ public class KaspandrWindow extends Window implements Bindable {
             @Override
             public void buttonPressed(Button button) {
             	try {
-	            	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+firstJson.getText().replaceAll("'", "\"")+"]}", ObjectNode.class);
-					JsonNode lessonsNode1 = rootNode1.get("lessons");
-					
-					HashMap<String, Integer> groupMap = new HashMap<String, Integer>();
-					
-					if(lessonsNode1 != null && lessonsNode1.isArray()) {
-	    				Iterator<JsonNode> it = lessonsNode1.elements();
-	    				
-	    				while(it.hasNext()) {
-	    					JsonNode lesson = it.next();
-	    					
-	    					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-	    						if(groupMap.containsKey(lesson.get("groupName").textValue()))
-	    							groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
-	    						else
-	    							groupMap.put(lesson.get("groupName").textValue(), 1);
-	    					}
-	    				}
-	    			}
-					
-					String resultString = "";
-					
-					int count = 0;
-					for(String group : groupMap.keySet()) {
-						count += groupMap.get(group);
-					}
-					
-					for(String group : groupMap.keySet()) {
-						if(!resultString.isEmpty())
-							resultString += ", ";
-						
-						resultString += group+"("+groupMap.get(group)+")";
-					}
-					resultString = "Lessons("+count+"); " + resultString;
-					
-					checkGroupText1.setText(resultString);
+					checkGroupText1.setText(checkLessonCountByGroup(firstJson.getText().replaceAll("'", "\"")));
             	} catch (JsonParseException e) {
             		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();
@@ -236,43 +239,7 @@ public class KaspandrWindow extends Window implements Bindable {
             @Override
             public void buttonPressed(Button button) {
             	try {
-	            	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+secondJson.getText().replaceAll("'", "\"")+"]}", ObjectNode.class);
-					JsonNode lessonsNode1 = rootNode1.get("lessons");
-					
-					HashMap<String, Integer> groupMap = new HashMap<String, Integer>();
-					
-					if(lessonsNode1 != null && lessonsNode1.isArray()) {
-	    				Iterator<JsonNode> it = lessonsNode1.elements();
-	    				
-	    				while(it.hasNext()) {
-	    					JsonNode lesson = it.next();
-	    					
-	    					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-	    						if(groupMap.containsKey(lesson.get("groupName").textValue()))
-	    							groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
-	    						else
-	    							groupMap.put(lesson.get("groupName").textValue(), 1);
-	    					}
-	    				}
-	    			}
-					
-					String resultString = "";
-					
-					int count = 0;
-					for(String group : groupMap.keySet()) {
-						count += groupMap.get(group);
-					}
-					
-					
-					for(String group : groupMap.keySet()) {
-						if(!resultString.isEmpty())
-							resultString += ", ";
-						
-						resultString += group+"("+groupMap.get(group)+")";
-					}
-					resultString = "Lessons("+count+"); " + resultString;
-					
-					checkGroupText2.setText(resultString);
+            		checkGroupText2.setText(checkLessonCountByGroup(secondJson.getText().replaceAll("'", "\"")));
             	} catch (JsonParseException e) {
             		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();
@@ -290,43 +257,7 @@ public class KaspandrWindow extends Window implements Bindable {
             @Override
             public void buttonPressed(Button button) {
             	try {
-	            	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+finalJsonText.getText().replaceAll("'", "\"")+"]}", ObjectNode.class);
-					JsonNode lessonsNode1 = rootNode1.get("lessons");
-					
-					HashMap<String, Integer> groupMap = new HashMap<String, Integer>();
-					
-					if(lessonsNode1 != null && lessonsNode1.isArray()) {
-	    				Iterator<JsonNode> it = lessonsNode1.elements();
-	    				
-	    				while(it.hasNext()) {
-	    					JsonNode lesson = it.next();
-	    					
-	    					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-	    						if(groupMap.containsKey(lesson.get("groupName").textValue()))
-	    							groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
-	    						else
-	    							groupMap.put(lesson.get("groupName").textValue(), 1);
-	    					}
-	    				}
-	    			}
-					
-					String resultString = "";
-					
-					int count = 0;
-					for(String group : groupMap.keySet()) {
-						count += groupMap.get(group);
-					}
-					
-					
-					for(String group : groupMap.keySet()) {
-						if(!resultString.isEmpty())
-							resultString += ", ";
-						
-						resultString += group+"("+groupMap.get(group)+")";
-					}
-					resultString = "Lessons("+count+"); " + resultString;
-					
-					checkGroupText3.setText(resultString);
+            		checkGroupText3.setText(checkLessonCountByGroup(finalJsonText.getText().replaceAll("'", "\"")));
             	} catch (JsonParseException e) {
             		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();

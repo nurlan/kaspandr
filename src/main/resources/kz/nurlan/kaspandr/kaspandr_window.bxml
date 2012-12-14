@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<kaspandrwindow:KaspandrWindow title="Kaspandr 1.7.CR2" maximized="true"
+<kaspandrwindow:KaspandrWindow title="Kaspandr 1.7.Final" maximized="true"
     xmlns:bxml="http://pivot.apache.org/bxml"
     xmlns:kaspandrwindow="kz.nurlan.kaspandr"
     xmlns="org.apache.pivot.wtk">
@@ -8,57 +8,61 @@
     </bxml:define>
 
     <Border styles="{padding:6}">
-    <ScrollPane horizontalScrollBarPolicy="fill_to_capacity"
-        verticalScrollBarPolicy="fill" >
-        <BoxPane orientation="vertical" styles="{spacing:6}">
-            
-            <BoxPane orientation="horizontal" styles="{spacing:6}">
-	            <Label text="Enter json texts:" styles="{font:{bold:true}}"/>
-            </BoxPane>
-            
-            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
-                <Label text="JSON 1:"/>
-                <TextInput bxml:id="firstJson"/>
-                <PushButton bxml:id="checkGroupButton1" buttonData="Check"/>
-                <Label text="Groups:"/>
-                <Label bxml:id="checkGroupText1" text=""/>
-            </BoxPane>
-            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
-                <Label text="JSON 2:"/>
-                <TextInput bxml:id="secondJson"/>
-                <PushButton bxml:id="checkGroupButton2" buttonData="Check"/>
-                <Label text="Groups:"/>
-                <Label bxml:id="checkGroupText2" text=""/>
-            </BoxPane>
-            
-            <PushButton bxml:id="jsonMergeButton" buttonData="Merge"/>
-            
-			<BoxPane styles="{padding:4, verticalAlignment:'center'}">
-                <Label text="Final lesson sequence:" styles="{font:{bold:true}}"/>
-                <Label bxml:id="finalLessonSequence" text=""/>
-            </BoxPane>
-            
-            <BoxPane orientation="horizontal" styles="{spacing:6}">
-	            <Label text="Final JSON:" styles="{font:{bold:true}}"/>
-            </BoxPane>
-                        
-            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
-                <Border styles="{color:10}">
-                    <ScrollPane horizontalScrollBarPolicy="fill"
-                        verticalScrollBarPolicy="fill_to_capacity"
-                        preferredHeight="240" preferredWidth="740">
-                        <TextArea bxml:id="finalJsonText" text="" />
-                    </ScrollPane>
-                </Border>
-                
-            </BoxPane>
-            
-            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
-	            <PushButton bxml:id="checkGroupButton3" buttonData="Check"/>
-                <Label text="Groups:"/>
-                <Label bxml:id="checkGroupText3" text=""/>
-            </BoxPane>
-        </BoxPane>
+	    <ScrollPane horizontalScrollBarPolicy="fill_to_capacity" verticalScrollBarPolicy="fill" >
+	    	<StackPane>
+		        <BoxPane orientation="vertical" styles="{spacing:6}">
+		            
+		            <BoxPane orientation="horizontal" styles="{spacing:6}">
+			            <Label text="Enter json texts:" styles="{font:{bold:true}}"/>
+		            </BoxPane>
+		            
+		            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
+		                <Label text="JSON 1:"/>
+		                <TextInput bxml:id="firstJson"/>
+		                <PushButton bxml:id="checkGroupButton1" buttonData="Check"/>
+		                <Label text="Groups:"/>
+		                <Label bxml:id="checkGroupText1" text=""/>
+		            </BoxPane>
+		            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
+		                <Label text="JSON 2:"/>
+		                <TextInput bxml:id="secondJson"/>
+		                <PushButton bxml:id="checkGroupButton2" buttonData="Check"/>
+		                <Label text="Groups:"/>
+		                <Label bxml:id="checkGroupText2" text=""/>
+		            </BoxPane>
+		            
+		            <PushButton bxml:id="jsonMergeButton" buttonData="Merge"/>
+		            
+					<BoxPane styles="{padding:4, verticalAlignment:'center'}">
+		                <Label text="Final lesson sequence:" styles="{font:{bold:true}}"/>
+		                <Label bxml:id="finalLessonSequence" text=""/>
+		            </BoxPane>
+		            
+		            <BoxPane orientation="horizontal" styles="{spacing:6}">
+			            <Label text="Final JSON:" styles="{font:{bold:true}}"/>
+		            </BoxPane>
+		                        
+		            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
+		                <Border styles="{color:10}">
+		                    <ScrollPane horizontalScrollBarPolicy="fill"
+		                        verticalScrollBarPolicy="fill_to_capacity"
+		                        preferredHeight="240" preferredWidth="740">
+		                        <TextArea bxml:id="finalJsonText" text="" />
+		                    </ScrollPane>
+		                </Border>
+		            </BoxPane>
+		            
+		            <BoxPane styles="{padding:4, verticalAlignment:'center'}">
+			            <PushButton bxml:id="checkGroupButton3" buttonData="Check"/>
+		                <Label text="Groups:"/>
+		                <Label bxml:id="checkGroupText3" text=""/>
+		            </BoxPane>
+		        </BoxPane>
+				
+				<BoxPane bxml:id="activityIndicatorBoxPane" visible="false" styles="{verticalAlignment:'center', horizontalAlignment:'center'}">
+	        		<ActivityIndicator bxml:id="activityIndicator" visible="true" styles="{color:16}" preferredWidth="128" preferredHeight="128" active="true"/>
+	        	</BoxPane>
+	        </StackPane>
         </ScrollPane>
     </Border>
 </kaspandrwindow:KaspandrWindow>
