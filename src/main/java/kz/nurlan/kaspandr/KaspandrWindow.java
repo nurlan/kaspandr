@@ -13,6 +13,7 @@ import org.apache.pivot.collections.Map;
 import org.apache.pivot.util.Resources;
 import org.apache.pivot.wtk.ActivityIndicator;
 import org.apache.pivot.wtk.Alert;
+import org.apache.pivot.wtk.ApplicationContext;
 import org.apache.pivot.wtk.BoxPane;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
@@ -37,7 +38,7 @@ public class KaspandrWindow extends Window implements Bindable {
 	@BXML private PushButton jsonMergeButton = null;
 	@BXML private PushButton checkGroupButton1 = null;
 	@BXML private PushButton checkGroupButton2 = null;
-	@BXML private PushButton checkGroupButton3 = null;
+	@BXML private PushButton nextButton = null;
 	@BXML private TextInput firstJson = null;
 	@BXML private TextInput secondJson = null;
 	@BXML private Label finalLessonSequence = null;
@@ -149,7 +150,19 @@ public class KaspandrWindow extends Window implements Bindable {
         jsonMergeButton.getButtonPressListeners().add(new ButtonPressListener() {
             @Override
             public void buttonPressed(Button button) {
-            	activityIndicatorBoxPane.setVisible(true);
+            	ApplicationContext.scheduleCallback(new Runnable(){
+                    @Override
+                    public void run() {
+                    	activityIndicatorBoxPane.setVisible(true);
+                    }
+                },0);
+            	ApplicationContext.scheduleCallback(new Runnable(){
+                    @Override
+                    public void run() {
+                    	activityIndicatorBoxPane.setVisible(false);
+                    }
+                },2000);
+            	
 				try {
 					String finalJson = "";
 					
@@ -203,6 +216,7 @@ public class KaspandrWindow extends Window implements Bindable {
 	    			
 	    			finalLessonSequence.setText(""+(firstID));
 	    			finalJsonText.setText(finalJson);
+	    			checkGroupText3.setText(checkLessonCountByGroup(finalJsonText.getText().replaceAll("'", "\"")));
 				} catch (JsonParseException e) {
 					Alert.alert(MessageType.ERROR, "JsonParseException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
 					e.printStackTrace();
@@ -213,7 +227,6 @@ public class KaspandrWindow extends Window implements Bindable {
 					Alert.alert(MessageType.ERROR, "IOException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
 					e.printStackTrace();
 				}
-				activityIndicatorBoxPane.setVisible(false);
             }
         });
         
@@ -253,21 +266,18 @@ public class KaspandrWindow extends Window implements Bindable {
             }
         });
         
-        checkGroupButton3.getButtonPressListeners().add(new ButtonPressListener() {
+        nextButton.getButtonPressListeners().add(new ButtonPressListener() {
             @Override
             public void buttonPressed(Button button) {
             	try {
-            		checkGroupText3.setText(checkLessonCountByGroup(finalJsonText.getText().replaceAll("'", "\"")));
-            	} catch (JsonParseException e) {
-            		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
+	        		firstJson.setText(finalJsonText.getText());
+	        		secondJson.setText("");
+	        		finalJsonText.setText("");
+            	}
+            	catch(Exception e) {
+            		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","Unknown error",null,KaspandrWindow.this,null);
 					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonMappingException",null,KaspandrWindow.this,null);
-					e.printStackTrace();
-				} catch (IOException e) {
-					Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","IOException",null,KaspandrWindow.this,null);
-					e.printStackTrace();
-				}
+            	}
             }
         });
     }
