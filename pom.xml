@@ -27,7 +27,25 @@
 	</repositories>
 
 	<groupId>kz.nurlan.kaspandr</groupId>
-	<version>1.7.CR2</version>
+	<version>1.8.Beta2</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>kz.nurlan.kaspandr.KaspandrMain</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 	<dependencies>
 		<!-- json jackson -->

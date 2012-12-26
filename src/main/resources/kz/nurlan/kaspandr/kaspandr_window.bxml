@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<kaspandrwindow:KaspandrWindow title="Kaspandr 1.8.Beta1" maximized="true"
+<kaspandrwindow:KaspandrWindow title="Kaspandr 1.8.Beta2" maximized="true"
     xmlns:bxml="http://pivot.apache.org/bxml"
     xmlns:kaspandrwindow="kz.nurlan.kaspandr"
     xmlns="org.apache.pivot.wtk">

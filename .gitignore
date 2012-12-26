@@ -10,3 +10,9 @@ build/
 dist/
 exploded-archives/
 target/
+local/
+
+/*.ids
+/*.ipr
+/*.iws
+*.iml

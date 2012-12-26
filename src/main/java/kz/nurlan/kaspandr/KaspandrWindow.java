@@ -1,7 +1,23 @@
+/*Copyright © 2012 Nurlan Rakhimzhanov
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package kz.nurlan.kaspandr;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,11 +76,11 @@ public class KaspandrWindow extends Window implements Bindable {
 				while(it.hasNext()) {
 					JsonNode lesson = it.next();
 					
-					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-						if(groupMap.containsKey(lesson.get("groupName").textValue()))
-							groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue()).add(lesson));
+					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("group")!=null && !lesson.get("group").textValue().isEmpty()) {
+						if(groupMap.containsKey(lesson.get("group").textValue()))
+							groupMap.put(lesson.get("group").textValue(), groupMap.get(lesson.get("group").textValue()).add(lesson));
 						else {
-							groupMap.put(lesson.get("groupName").textValue(), mapper.createArrayNode().add(lesson));
+							groupMap.put(lesson.get("group").textValue(), mapper.createArrayNode().add(lesson));
 						}
 					}
 				}
@@ -82,18 +98,20 @@ public class KaspandrWindow extends Window implements Bindable {
     	try {
         	ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+lessons+"]}", ObjectNode.class);
 			JsonNode lessonsNode1 = rootNode1.get("lessons");
-			
+
+            groupMap.put("all", 0);
+
 			if(lessonsNode1 != null && lessonsNode1.isArray()) {
 				Iterator<JsonNode> it = lessonsNode1.elements();
 				
 				while(it.hasNext()) {
 					JsonNode lesson = it.next();
 					
-					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-						if(groupMap.containsKey(lesson.get("groupName").textValue()))
-							groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
+					if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("group")!=null && !lesson.get("group").textValue().isEmpty()) {
+						if(groupMap.containsKey(lesson.get("group").textValue()))
+							groupMap.put(lesson.get("group").textValue(), groupMap.get(lesson.get("group").textValue())+1);
 						else
-							groupMap.put(lesson.get("groupName").textValue(), 1);
+							groupMap.put(lesson.get("group").textValue(), 1);
 					}
 				}
 			}
@@ -111,35 +129,47 @@ public class KaspandrWindow extends Window implements Bindable {
 		ObjectNode rootNode1 = mapper.readValue("{\"lessons\":["+lessons+"]}", ObjectNode.class);
 		JsonNode lessonsNode1 = rootNode1.get("lessons");
 		
-		TreeMap<String, Integer> groupMap = new TreeMap<String, Integer>();
-		
+		HashMap<String, Integer> groupMap = new HashMap<String, Integer>();
+        HashMap<String, String> groupNameMap = new HashMap<String, String>();
+        ValueComparator bvc = new ValueComparator(groupNameMap);
+        TreeMap<String, String> sortedGroupNameMap = new TreeMap<String, String>(bvc);
+        
+        groupMap.put("all", 0);
+        
 		if(lessonsNode1 != null && lessonsNode1.isArray()) {
 			Iterator<JsonNode> it = lessonsNode1.elements();
 			
 			while(it.hasNext()) {
 				JsonNode lesson = it.next();
 				
-				if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("groupName")!=null && !lesson.get("groupName").textValue().isEmpty()) {
-					if(groupMap.containsKey(lesson.get("groupName").textValue()))
-						groupMap.put(lesson.get("groupName").textValue(), groupMap.get(lesson.get("groupName").textValue())+1);
+				if(lesson.get("id")!=null && !lesson.get("status").textValue().equalsIgnoreCase("deleted") && lesson.get("group")!=null && !lesson.get("group").textValue().isEmpty()) {
+					if(groupMap.containsKey(lesson.get("group").textValue()))
+						groupMap.put(lesson.get("group").textValue(), groupMap.get(lesson.get("group").textValue())+1);
 					else
-						groupMap.put(lesson.get("groupName").textValue(), 1);
+						groupMap.put(lesson.get("group").textValue(), 1);
+
+                    groupNameMap.put(lesson.get("group").textValue(), lesson.get("groupName").textValue());
 				}
+				
+				groupMap.put("all", groupMap.get("all")+1);
 			}
 		}
+		sortedGroupNameMap.putAll(groupNameMap);
 		
 		int count = 0;
 		for(String group : groupMap.keySet()) {
-			count += groupMap.get(group);
+			if(!group.equals("all")) {
+				count += groupMap.get(group);
+			}
 		}
 		
-		for(String group : groupMap.keySet()) {
+		for(String group : sortedGroupNameMap.keySet()) {
 			if(!resultString.isEmpty())
 				resultString += ", ";
 			
-			resultString += group+"("+groupMap.get(group)+")";
+			resultString += groupNameMap.get(group)+"("+groupMap.get(group)+")";
 		}
-		resultString = "Lessons("+count+"); " + resultString;
+		resultString = "Lessons("+count+"/"+groupMap.get("all")+"); " + resultString;
     	
     	return resultString;
     }
@@ -218,7 +248,7 @@ public class KaspandrWindow extends Window implements Bindable {
 	    			finalJsonText.setText(finalJson);
 	    			checkGroupText3.setText(checkLessonCountByGroup(finalJsonText.getText().replaceAll("'", "\"")));
 				} catch (JsonParseException e) {
-					Alert.alert(MessageType.ERROR, "JsonParseException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
+                    Alert.alert(MessageType.ERROR, "Incorrect JSON format!","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
 					Alert.alert(MessageType.ERROR, "JsonMappingException. Make bug report to Nurlan Rakhimzhanov(nurlan.rakhimzhanov@bee.kz).", KaspandrWindow.this);
@@ -236,7 +266,7 @@ public class KaspandrWindow extends Window implements Bindable {
             	try {
 					checkGroupText1.setText(checkLessonCountByGroup(firstJson.getText().replaceAll("'", "\"")));
             	} catch (JsonParseException e) {
-            		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
+                    Alert.alert(MessageType.ERROR, "Incorrect JSON format!","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
 					Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonMappingException",null,KaspandrWindow.this,null);
@@ -254,7 +284,7 @@ public class KaspandrWindow extends Window implements Bindable {
             	try {
             		checkGroupText2.setText(checkLessonCountByGroup(secondJson.getText().replaceAll("'", "\"")));
             	} catch (JsonParseException e) {
-            		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonParseException",null,KaspandrWindow.this,null);
+            		Alert.alert(MessageType.ERROR, "Incorrect JSON format!","JsonParseException",null,KaspandrWindow.this,null);
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
 					Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","JsonMappingException",null,KaspandrWindow.this,null);
@@ -273,6 +303,9 @@ public class KaspandrWindow extends Window implements Bindable {
 	        		firstJson.setText(finalJsonText.getText());
 	        		secondJson.setText("");
 	        		finalJsonText.setText("");
+	        		checkGroupText1.setText("");
+	        		checkGroupText2.setText("");
+	        		checkGroupText3.setText("");
             	}
             	catch(Exception e) {
             		Alert.alert(MessageType.ERROR, "Make bug report to Nurlan Rakhimzhanov\n(nurlan.rakhimzhanov@bee.kz).","Unknown error",null,KaspandrWindow.this,null);
@@ -280,5 +313,17 @@ public class KaspandrWindow extends Window implements Bindable {
             	}
             }
         });
+    }
+    
+    private class ValueComparator implements Comparator<String> {
+
+        HashMap<String, String> base;
+        public ValueComparator(HashMap<String, String> groupNameMap) {
+            this.base = groupNameMap;
+        }
+
+        public int compare(String a, String b) {
+            return base.get(a).compareToIgnoreCase(base.get(b));
+        }
     }
 }
